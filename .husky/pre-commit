@@ -1,0 +1,2 @@
+echo "precommit test"
+exit 1
