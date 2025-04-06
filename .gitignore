@@ -102,3 +102,9 @@ fheroes2.data
 fheroes2.js
 fheroes2.wasm
 fheroes2.wasm.map
+
+# Node.js
+node_modules/
+
+# Husky
+.husky/_

@@ -3,7 +3,6 @@
   "description": "fheroes2 is a recreation of the Heroes of Might and Magic II game engine.",
   "private": true,
   "scripts": {
-    "install-git-hooks": "npm install husky --no-save",
-    "prepare": "node .husky/install.mjs"
+    "install-git-hooks": "npm install husky --no-save && husky"
   }
 }
