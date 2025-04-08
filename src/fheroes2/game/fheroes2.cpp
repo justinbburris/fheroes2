@@ -79,6 +79,7 @@
 #include "timing.h"
 #include "ui_tool.h"
 #include "zzlib.h"
+#include "test_harness.h"
 
 namespace
 {
@@ -295,9 +296,25 @@ int main( int argc, char ** argv )
         Settings & conf = Settings::Get();
         conf.SetProgramPath( argv[0] );
 
-        InitConfigDir();
-        InitDataDir();
-        ReadConfigs();
+        // Check for test harness mode first
+        if (TestHarness::isTestHarnessMode(argc, argv)) {
+            // Initialize only video for test harness
+            const fheroes2::CoreInitializer coreInitializer( { fheroes2::SystemInitializationComponent::Video } );
+
+            // Initialize configs and directories
+            InitConfigDir();
+            InitDataDir();
+            ReadConfigs();
+
+            // Initialize display
+            DisplayInitializer displayInitializer;
+
+            // Initialize game data
+            DataInitializer dataInitializer;
+
+            // Run test harness commands
+            return TestHarness::runTestHarnessCommands() ? EXIT_SUCCESS : EXIT_FAILURE;
+        }
 
         std::set<fheroes2::SystemInitializationComponent> coreComponents{ fheroes2::SystemInitializationComponent::Audio,
                                                                           fheroes2::SystemInitializationComponent::Video };
