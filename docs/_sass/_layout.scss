@@ -1,22 +1,29 @@
 // Base styles for mobile (default)
+header {
+  max-width: 90%;
+}
+
 div.shell {
   width: 100%;
   margin: 0 auto;
   padding: 0 15px;
 }
 
-header {
-  max-width: 90%;
-}
-
 footer {
   width: 100%;
   margin: 0 auto;
   padding: 20px 15px;
+  max-width: 90%;
+  background: none;
 }
 
 // tablet styles (768px and up)
 @media screen and (min-width: 768px) {
+  body {
+    max-width: 1028px;
+    margin: 0 auto;
+  }
+
   header {
     .ribbon-inner {
       box-shadow: 0 5px 3px rgba(0,0,0,0.7);
@@ -65,6 +72,7 @@ footer {
       width: 10%;
       height: 196px;
       position: relative;
+      box-shadow: 0 4px 5px -5px #5c7f98;
 
       &:before,
       &:after {
@@ -87,7 +95,7 @@ footer {
   }
 
   section#main_content {
-    padding: 0 8%;
+    padding: 0 9%;
   }
 }
 
