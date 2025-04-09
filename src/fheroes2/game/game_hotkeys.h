@@ -45,6 +45,7 @@ namespace Game
 
         GLOBAL_TOGGLE_FULLSCREEN,
         GLOBAL_TOGGLE_TEXT_SUPPORT_MODE,
+        GLOBAL_TAKE_SCREENSHOT,
 
 #if defined( WITH_DEBUG )
         // This hotkey is only for debug mode.
