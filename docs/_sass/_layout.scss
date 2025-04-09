@@ -1,26 +1,217 @@
-// Override default merlot theme widths to double the content area
+// Base styles for mobile (default)
 div.shell {
-  width: 1340px !important; // Double the original 670px
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 15px;
 }
 
 header {
-  max-width: 1200px !important; // Double the original 600px
-}
-
-section#downloads, div#no-downloads {
-  width: 1100px !important; // Double the original 550px
-}
-
-section#main_content {
-  padding: 20px 82px 0;
-  max-width: 1200px !important;
+  max-width: 90%;
 }
 
 footer {
-  max-width: 1120px !important; // Double the original 560px
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 15px;
 }
 
-// Ensure images can scale up in the wider content area
-img {
-  max-width: 1000px !important; // Increased from 502px
+// tablet styles (768px and up)
+@media screen and (min-width: 768px) {
+  header {
+    .ribbon-inner {
+      box-shadow: 0 5px 3px rgba(0,0,0,0.7);
+    }
+  }
+
+  span.banner-fix {
+    display: none;
+  }
+
+  section#downloads {
+    width: calc(90% - 50px);
+    display: flex;
+    justify-content: space-between;
+    background: none;
+    margin-bottom: -100px;
+    position: relative;
+
+    &:before,
+    &:after {
+      content: '';
+      position: absolute;
+      top: 20px;
+      bottom: 20px;
+      width: 2px;
+      background: linear-gradient(
+        to bottom,
+        rgba(211, 204, 193, 0) 0%,
+        rgba(211, 204, 193, 0.8) 20%,
+        rgba(211, 204, 193, 0.8) 80%,
+        rgba(211, 204, 193, 0) 100%
+      );
+    }
+
+    &:before {
+      left: -2px;
+    }
+
+    &:after {
+      right: -2px;
+    }
+
+    .download-separator {
+      background-color: #5c7f98;
+      flex: 1 1 auto;
+      width: 10%;
+      height: 196px;
+      position: relative;
+
+      &:before,
+      &:after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background-color: #7fb0d2;
+      }
+
+      &:before {
+        top: 4px;
+      }
+
+      &:after {
+        bottom: 4px;
+      }
+    }
+  }
+
+  section#main_content {
+    padding: 0 8%;
+  }
 }
+
+// header {
+//   max-width: 100% !important;
+//   margin: 0 auto;
+//   word-wrap: break-word;
+//   overflow-wrap: break-word;
+// }
+
+// section#downloads, div#no-downloads {
+//   display: none !important; // Hide on mobile
+// }
+
+// section#main_content {
+//   width: 100% !important;
+//   max-width: 100% !important;
+//   margin: 0 auto;
+//   padding: 20px 15px;
+//   box-sizing: border-box;
+//   word-wrap: break-word;
+//   overflow-wrap: break-word;
+
+//   p {
+//     max-width: 100%;
+//     word-wrap: break-word;
+//     overflow-wrap: break-word;
+//   }
+// }
+
+
+// // Ensure images can scale up in the wider content area
+// img {
+//   max-width: 100% !important;
+//   height: auto;
+// }
+
+// // tablet styles (768px and up)
+// @media screen and (min-width: 768px) {
+//   div.shell {
+//     width: 720px !important;
+//     padding: 0;
+//   }
+
+//   header {
+//     max-width: 720px !important;
+//   }
+
+//   section#downloads, div#no-downloads {
+//     display: block !important;
+//     width: 720px !important;
+//     text-align: center;
+//     margin: 0 auto;
+//   }
+
+//   section#main_content {
+//     width: 720px !important;
+//     max-width: 720px !important;
+//     padding: 20px 30px;
+//   }
+
+//   footer {
+//     width: 720px !important;
+//     max-width: 720px !important;
+//     padding: 20px 0;
+//   }
+
+//   img {
+//     max-width: 720px !important;
+//   }
+// }
+
+// // Desktop styles (1024px and up)
+// @media screen and (min-width: 1024px) {
+//   div.shell {
+//     width: 960px !important;
+//   }
+
+//   header {
+//     max-width: 960px !important;
+//   }
+
+//   section#downloads, div#no-downloads {
+//     width: 960px !important;
+//   }
+
+//   section#main_content {
+//     padding: 20px 50px 0;
+//     max-width: 960px !important;
+//   }
+
+//   footer {
+//     max-width: 960px !important;
+//   }
+
+//   img {
+//     max-width: 960px !important;
+//   }
+// }
+
+// // Large desktop styles (1340px and up)
+// @media screen and (min-width: 1340px) {
+//   div.shell {
+//     width: 1340px !important;
+//   }
+
+//   header {
+//     max-width: 1200px !important;
+//   }
+
+//   section#downloads, div#no-downloads {
+//     width: 1100px !important;
+//   }
+
+//   section#main_content {
+//     padding: 20px 82px 0;
+//     max-width: 1200px !important;
+//   }
+
+//   footer {
+//     max-width: 1120px !important;
+//   }
+
+//   img {
+//     max-width: 1000px !important;
+//   }
+// }

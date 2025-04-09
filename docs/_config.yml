@@ -1,9 +1,19 @@
 theme: jekyll-theme-merlot
 
-description: [A recreation of Heroes of Might and Magic II game engine.]
+description: A recreation of Heroes of Might and Magic II game engine.
 show_downloads: ["true"]
 
 favicon: /_includes/favicon.ico
+
+header:
+  download1:
+    url: https://ihhub.github.io/fheroes2/INSTALL.html#windows-installer
+    em: Works on
+    cta: Windows
+  download2:
+    url: https://ihhub.github.io/fheroes2/INSTALL.html
+    em: Works on
+    cta: Mac, Linux, Android, etc.
 
 sass:
   style: compressed
