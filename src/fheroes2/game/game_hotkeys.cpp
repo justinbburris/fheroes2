@@ -35,6 +35,8 @@
 #include <type_traits>
 #include <utility>
 
+#include <SDL.h>
+
 #include "battle_arena.h"
 #include "dialog.h"
 #include "game_interface.h"
@@ -51,6 +53,8 @@
 #include "translations.h"
 #include "ui_dialog.h"
 #include "ui_language.h"
+#include "image.h"
+#include "image_palette.h"
 
 namespace
 {
@@ -107,6 +111,8 @@ namespace
             = { Game::HotKeyCategory::GLOBAL, gettext_noop( "hotkey|toggle fullscreen" ), fheroes2::Key::KEY_F4 };
         hotKeyEventInfo[hotKeyEventToInt( Game::HotKeyEvent::GLOBAL_TOGGLE_TEXT_SUPPORT_MODE )]
             = { Game::HotKeyCategory::GLOBAL, gettext_noop( "hotkey|toggle text support mode" ), fheroes2::Key::KEY_F10 };
+        hotKeyEventInfo[hotKeyEventToInt( Game::HotKeyEvent::GLOBAL_TAKE_SCREENSHOT )]
+            = { Game::HotKeyCategory::GLOBAL, gettext_noop( "hotkey|take screenshot" ), fheroes2::Key::KEY_F9 };
 
 #if defined( WITH_DEBUG )
         hotKeyEventInfo[hotKeyEventToInt( Game::HotKeyEvent::GLOBAL_TOGGLE_DEVELOPER_MODE )]
@@ -501,6 +507,56 @@ void Game::globalKeyDownEvent( const fheroes2::Key key, const int32_t modifier )
     else if ( key == hotKeyEventInfo[hotKeyEventToInt( HotKeyEvent::GLOBAL_TOGGLE_TEXT_SUPPORT_MODE )].key ) {
         conf.setTextSupportMode( !conf.isTextSupportModeEnabled() );
         conf.Save( Settings::configFileName );
+    }
+    else if ( key == hotKeyEventInfo[hotKeyEventToInt( HotKeyEvent::GLOBAL_TAKE_SCREENSHOT )].key ) {
+        const fheroes2::Display & display = fheroes2::Display::instance();
+        const std::string screenshotPath = System::concatPath( System::GetDataDirectory( "fheroes2" ), "screenshots" );
+
+        // Create screenshots directory if it doesn't exist
+        if ( !System::IsDirectory( screenshotPath ) ) {
+            System::MakeDirectory( screenshotPath );
+        }
+
+        // Generate filename with timestamp
+        const time_t now = time( nullptr );
+        const struct tm * timeinfo = localtime( &now );
+        char timestamp[32];
+        strftime( timestamp, sizeof( timestamp ), "%Y%m%d_%H%M%S", timeinfo );
+        const std::string filename = System::concatPath( screenshotPath, "fheroes2_" + std::string( timestamp ) + ".png" );
+
+        // Create SDL surface from display
+        SDL_Surface * surface = SDL_CreateRGBSurface( 0, display.width(), display.height(), 8, 0, 0, 0, 0 );
+        if ( surface ) {
+            // Set up palette
+            std::vector<SDL_Color> paletteSDL;
+            paletteSDL.resize( 256 );
+            const uint8_t * gamePalette = fheroes2::getGamePalette();
+
+            for ( int i = 0; i < 256; ++i ) {
+                const uint8_t * value = gamePalette + i * 3;
+                SDL_Color & col = paletteSDL[i];
+                col.r = *value << 2;
+                col.g = *( value + 1 ) << 2;
+                col.b = *( value + 2 ) << 2;
+                col.a = 255;
+            }
+
+            SDL_SetPaletteColors( surface->format->palette, paletteSDL.data(), 0, 256 );
+
+            // Copy display data to surface
+            const uint8_t * imageData = display.image();
+            memcpy( surface->pixels, imageData, static_cast<size_t>( display.width() * display.height() ) );
+
+            // Save surface to file
+#if defined( WITH_IMAGE )
+            IMG_SavePNG( surface, System::encLocalToUTF8( filename ).c_str() );
+#else
+            SDL_SaveBMP( surface, System::encLocalToUTF8( filename ).c_str() );
+#endif
+            SDL_FreeSurface( surface );
+
+            DEBUG_LOG( DBG_GAME, DBG_INFO, "Screenshot saved to " << filename )
+        }
     }
 #if defined( WITH_DEBUG )
     else if ( key == hotKeyEventInfo[hotKeyEventToInt( HotKeyEvent::GLOBAL_TOGGLE_DEVELOPER_MODE )].key ) {
