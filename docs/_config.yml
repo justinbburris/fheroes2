@@ -1,1 +1,9 @@
 theme: jekyll-theme-merlot
+
+description: [A recreation of Heroes of Might and Magic II game engine.]
+show_downloads: ["true"]
+
+favicon: /_includes/favicon.ico
+
+sass:
+  style: compressed

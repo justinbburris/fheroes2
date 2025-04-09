@@ -1,0 +1,26 @@
+// Override default merlot theme widths to double the content area
+div.shell {
+  width: 1340px !important; // Double the original 670px
+}
+
+header {
+  max-width: 1200px !important; // Double the original 600px
+}
+
+section#downloads, div#no-downloads {
+  width: 1100px !important; // Double the original 550px
+}
+
+section#main_content {
+  padding: 20px 82px 0;
+  max-width: 1200px !important;
+}
+
+footer {
+  max-width: 1120px !important; // Double the original 560px
+}
+
+// Ensure images can scale up in the wider content area
+img {
+  max-width: 1000px !important; // Increased from 502px
+}

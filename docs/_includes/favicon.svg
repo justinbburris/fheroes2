@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background -->
+    <rect width="32" height="32" fill="#2c1810"/>
+
+    <!-- Castle-like shape -->
+    <path d="M16 4 L24 8 L24 16 L28 20 L28 28 L4 28 L4 20 L8 16 L8 8 Z" fill="#8b4513"/>
+
+    <!-- Castle details -->
+    <path d="M16 4 L20 6 L20 14 L24 18 L24 26 L8 26 L8 18 L12 14 L12 6 Z" fill="#a0522d"/>
+
+    <!-- Castle windows -->
+    <rect x="12" y="12" width="4" height="4" fill="#ffd700"/>
+    <rect x="16" y="12" width="4" height="4" fill="#ffd700"/>
+    <rect x="20" y="12" width="4" height="4" fill="#ffd700"/>
+
+    <!-- Castle door -->
+    <rect x="14" y="20" width="4" height="8" fill="#4a2505"/>
+</svg>
