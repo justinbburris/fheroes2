@@ -26,13 +26,10 @@
 #include <SDL.h>
 #include <ctime>
 
-#if defined(WITH_SDL_IMAGE)
-#include <SDL_image.h>
-#endif
-
-#include "screen.h"
-#include "image_palette.h"
+#include "image.h"
+#include "image_tool.h"
 #include "logging.h"
+#include "screen.h"
 #include "system.h"
 
 bool ScreenshotManager::takeScreenshot( const fheroes2::Display & display )
@@ -77,18 +74,31 @@ bool ScreenshotManager::takeScreenshot( const fheroes2::Display & display )
         return false;
     }
 
-    // Save surface to file
-    // Use PNG format if available, otherwise fall back to BMP
-#if defined(WITH_SDL_IMAGE)
-    const int result = IMG_SavePNG( surface, System::encLocalToUTF8( filename ).c_str() );
-#else
-    const int result = SDL_SaveBMP( surface, System::encLocalToUTF8( filename ).c_str() );
-#endif
+    // Convert SDL surface to fheroes2::Image
+    fheroes2::Image screenshot( width, height );
+    const uint32_t * inY = static_cast<uint32_t *>( surface->pixels );
+    uint8_t * outY = screenshot.image();
+
+    for ( int y = 0; y < height; ++y ) {
+        const uint32_t * inX = inY;
+        uint8_t * outX = outY;
+
+        for ( int x = 0; x < width; ++x, ++inX, ++outX ) {
+            const uint8_t r = ( *inX >> 16 ) & 0xFF;
+            const uint8_t g = ( *inX >> 8 ) & 0xFF;
+            const uint8_t b = *inX & 0xFF;
+            *outX = fheroes2::GetColorId( r, g, b );
+        }
+
+        inY += surface->pitch / 4;
+        outY += width;
+    }
 
     SDL_FreeSurface( surface );
 
-    if ( result != 0 ) {
-        ERROR_LOG( "Failed to save screenshot to " << filename << ". Error: " << SDL_GetError() )
+    // Save using the existing image tool functionality
+    if ( !fheroes2::Save( screenshot, filename ) ) {
+        ERROR_LOG( "Failed to save screenshot to " << filename )
         return false;
     }
 
