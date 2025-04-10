@@ -35,8 +35,6 @@
 #include <type_traits>
 #include <utility>
 
-#include <SDL.h>
-
 #include "battle_arena.h"
 #include "dialog.h"
 #include "game_interface.h"
@@ -54,8 +52,6 @@
 #include "translations.h"
 #include "ui_dialog.h"
 #include "ui_language.h"
-#include "image.h"
-#include "image_palette.h"
 
 namespace
 {
