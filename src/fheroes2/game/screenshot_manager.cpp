@@ -43,6 +43,7 @@ bool ScreenshotManager::takeScreenshot( const fheroes2::Display & display )
     const std::string filename = System::concatPath( screenshotPath, generateScreenshotFilename() );
 
     // Create SDL surface from display
+    // The game uses an 8-bit indexed color mode (one byte per pixel)
     SDL_Surface * surface = SDL_CreateRGBSurface( 0, display.width(), display.height(), 8, 0, 0, 0, 0 );
     if ( !surface ) {
         ERROR_LOG( "Failed to create SDL surface for screenshot. Error: " << SDL_GetError() )
@@ -50,26 +51,34 @@ bool ScreenshotManager::takeScreenshot( const fheroes2::Display & display )
     }
 
     // Set up palette
+    // The game internally uses a 6-bit palette (0-63 range for R,G,B components)
+    // We need to convert it to an 8-bit palette (0-255 range) for the output image
     std::vector<SDL_Color> paletteSDL;
     paletteSDL.resize( 256 );
     const uint8_t * gamePalette = fheroes2::getGamePalette();
 
     for ( int i = 0; i < 256; ++i ) {
+        // Each color in the palette uses 3 bytes (R,G,B)
         const uint8_t * value = gamePalette + i * 3;
         SDL_Color & col = paletteSDL[i];
+
+        // Convert from 6-bit (0-63) to 8-bit (0-255) color space by left-shifting 2 bits (multiply by 4)
+        // This maps the range 0-63 to 0-252
         col.r = *value << 2;
         col.g = *( value + 1 ) << 2;
         col.b = *( value + 2 ) << 2;
-        col.a = 255;
+        col.a = 255;  // Set full opacity as the game doesn't use alpha channel
     }
 
     SDL_SetPaletteColors( surface->format->palette, paletteSDL.data(), 0, 256 );
 
     // Copy display data to surface
+    // Each pixel in display is an 8-bit index (0-255) into the color palette
     const uint8_t * imageData = display.image();
     memcpy( surface->pixels, imageData, static_cast<size_t>( display.width() * display.height() ) );
 
     // Save surface to file
+    // Use PNG format if available, otherwise fall back to BMP
 #if defined( WITH_IMAGE )
     const int result = IMG_SavePNG( surface, System::encLocalToUTF8( filename ).c_str() );
 #else
@@ -89,6 +98,7 @@ bool ScreenshotManager::takeScreenshot( const fheroes2::Display & display )
 
 std::string ScreenshotManager::generateScreenshotFilename() const
 {
+    // Create a unique timestamp-based filename in the format: fheroes2_YYYYMMDD_HHMMSS.png
     const time_t now = time( nullptr );
     const struct tm * timeinfo = localtime( &now );
     char timestamp[32];
