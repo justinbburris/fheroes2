@@ -109,7 +109,7 @@ namespace
         hotKeyEventInfo[hotKeyEventToInt( Game::HotKeyEvent::GLOBAL_TOGGLE_TEXT_SUPPORT_MODE )]
             = { Game::HotKeyCategory::GLOBAL, gettext_noop( "hotkey|toggle text support mode" ), fheroes2::Key::KEY_F10 };
         hotKeyEventInfo[hotKeyEventToInt( Game::HotKeyEvent::GLOBAL_TAKE_SCREENSHOT )]
-            = { Game::HotKeyCategory::GLOBAL, gettext_noop( "hotkey|take screenshot" ), fheroes2::Key::KEY_F9 };
+            = { Game::HotKeyCategory::GLOBAL, gettext_noop( "hotkey|take screenshot" ), fheroes2::Key::KEY_F12 };
 
 #if defined( WITH_DEBUG )
         hotKeyEventInfo[hotKeyEventToInt( Game::HotKeyEvent::GLOBAL_TOGGLE_DEVELOPER_MODE )]
