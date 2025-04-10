@@ -26,6 +26,10 @@
 #include <SDL.h>
 #include <ctime>
 
+#if defined(WITH_SDL_IMAGE)
+#include <SDL_image.h>
+#endif
+
 #include "screen.h"
 #include "image_palette.h"
 #include "logging.h"
@@ -42,44 +46,40 @@ bool ScreenshotManager::takeScreenshot( const fheroes2::Display & display )
 
     const std::string filename = System::concatPath( screenshotPath, generateScreenshotFilename() );
 
-    // Create SDL surface from display
-    // The game uses an 8-bit indexed color mode (one byte per pixel)
-    SDL_Surface * surface = SDL_CreateRGBSurface( 0, display.width(), display.height(), 8, 0, 0, 0, 0 );
+    // Get the SDL renderer from the window
+    SDL_Window * window = SDL_GetWindowFromID( 1 );
+    if ( !window ) {
+        ERROR_LOG( "Failed to get SDL window for screenshot. Error: " << SDL_GetError() )
+        return false;
+    }
+
+    SDL_Renderer * renderer = SDL_GetRenderer( window );
+    if ( !renderer ) {
+        ERROR_LOG( "Failed to get SDL renderer for screenshot. Error: " << SDL_GetError() )
+        return false;
+    }
+
+    // Get the current render target size
+    int width, height;
+    SDL_GetRendererOutputSize( renderer, &width, &height );
+
+    // Create a surface to hold the screenshot data
+    SDL_Surface * surface = SDL_CreateRGBSurface( 0, width, height, 32, 0, 0, 0, 0 );
     if ( !surface ) {
         ERROR_LOG( "Failed to create SDL surface for screenshot. Error: " << SDL_GetError() )
         return false;
     }
 
-    // Set up palette
-    // The game internally uses a 6-bit palette (0-63 range for R,G,B components)
-    // We need to convert it to an 8-bit palette (0-255 range) for the output image
-    std::vector<SDL_Color> paletteSDL;
-    paletteSDL.resize( 256 );
-    const uint8_t * gamePalette = fheroes2::getGamePalette();
-
-    for ( int i = 0; i < 256; ++i ) {
-        // Each color in the palette uses 3 bytes (R,G,B)
-        const uint8_t * value = gamePalette + i * 3;
-        SDL_Color & col = paletteSDL[i];
-
-        // Convert from 6-bit (0-63) to 8-bit (0-255) color space by left-shifting 2 bits (multiply by 4)
-        // This maps the range 0-63 to 0-252
-        col.r = *value << 2;
-        col.g = *( value + 1 ) << 2;
-        col.b = *( value + 2 ) << 2;
-        col.a = 255;  // Set full opacity as the game doesn't use alpha channel
+    // Read pixels from the renderer
+    if ( SDL_RenderReadPixels( renderer, NULL, surface->format->format, surface->pixels, surface->pitch ) != 0 ) {
+        ERROR_LOG( "Failed to read pixels from renderer. Error: " << SDL_GetError() )
+        SDL_FreeSurface( surface );
+        return false;
     }
-
-    SDL_SetPaletteColors( surface->format->palette, paletteSDL.data(), 0, 256 );
-
-    // Copy display data to surface
-    // Each pixel in display is an 8-bit index (0-255) into the color palette
-    const uint8_t * imageData = display.image();
-    memcpy( surface->pixels, imageData, static_cast<size_t>( display.width() * display.height() ) );
 
     // Save surface to file
     // Use PNG format if available, otherwise fall back to BMP
-#if defined( WITH_IMAGE )
+#if defined(WITH_SDL_IMAGE)
     const int result = IMG_SavePNG( surface, System::encLocalToUTF8( filename ).c_str() );
 #else
     const int result = SDL_SaveBMP( surface, System::encLocalToUTF8( filename ).c_str() );
