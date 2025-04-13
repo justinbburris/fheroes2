@@ -106,6 +106,7 @@
 #include "world.h"
 #include "world_object_uid.h"
 #include "../game/screenshot_manager.h"
+#include <SDL.h>
 
 namespace
 {
@@ -948,10 +949,10 @@ namespace Interface
                 {
                     const size_t mapWidth = world.w();
                     const size_t mapHeight = world.h();
-                    std::string message = _( "Map size is %{width} x %{height}." );
-                    StringReplace( message, "%{width}", std::to_string( mapWidth ) );
-                    StringReplace( message, "%{height}", std::to_string( mapHeight ) );
-                    _warningMessage.reset( message );
+                    // std::string message = _( "Map size is %{width} x %{height}." );
+                    // StringReplace( message, "%{width}", std::to_string( mapWidth ) );
+                    // StringReplace( message, "%{height}", std::to_string( mapHeight ) );
+                    // _warningMessage.reset( message );
 
                     // Start the map scrolling process
                     _isMapScrolling = true;
@@ -1157,7 +1158,19 @@ namespace Interface
             assert( res == fheroes2::GameMode::CANCEL );
 
             // Handle map scrolling
-            if ( _isMapScrolling && Game::validateCustomAnimationDelay( 200 ) ) {
+            if ( _isMapScrolling) {
+                // Take a screenshot at each scroll position and wait for it to complete
+                ScreenshotManager screenshotManager;
+                if ( !screenshotManager.takeScreenshot( fheroes2::Display::instance() ) ) {
+                    // If screenshot fails, stop scrolling
+                    _isMapScrolling = false;
+                    _currentScrollX = 0;
+                    _currentScrollY = 0;
+                }
+
+                // Add a fixed 2-second delay to ensure the screenshot is fully written
+                SDL_Delay(2000);
+
                 const fheroes2::Rect & roi = _gameArea.GetROI();
                 const size_t mapWidth = world.w();
                 const size_t mapHeight = world.h();
@@ -1182,10 +1195,6 @@ namespace Interface
                 // Set the new center position
                 _gameArea.SetCenterInPixels( fheroes2::Point( _currentScrollX + roi.width / 2, _currentScrollY + roi.height / 2 ) );
                 setRedraw( REDRAW_GAMEAREA | REDRAW_RADAR_CURSOR );
-
-                // Take a screenshot at each scroll position
-                ScreenshotManager screenshotManager;
-                screenshotManager.takeScreenshot( fheroes2::Display::instance() );
             }
 
             // Map objects animation
