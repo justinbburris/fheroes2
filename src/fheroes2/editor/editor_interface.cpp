@@ -750,6 +750,17 @@ namespace Interface
                 text.draw( roi.x + 4, roi.y + roi.height - text.height() - ( isSystemInfoShown ? 14 : 4 ), display );
             }
 
+            // Display view window coordinates
+            const fheroes2::Rect & roi = _gameArea.GetROI();
+            const fheroes2::Point topLeft = _gameArea.getCurrentCenterInPixels() - fheroes2::Point(roi.width / 2, roi.height / 2);
+            const fheroes2::Point bottomRight = topLeft + fheroes2::Point(roi.width, roi.height);
+
+            std::string coordText = std::string("View: [") + std::to_string(topLeft.x) + "," + std::to_string(topLeft.y) +
+                                  "] to [" + std::to_string(bottomRight.x) + "," + std::to_string(bottomRight.y) + "]";
+
+            fheroes2::Text coordinates(coordText, fheroes2::FontType::normalWhite());
+            coordinates.draw(roi.x + 4, roi.y + 4, display);
+
             // TODO:: Render horizontal and vertical map tiles scale and highlight with yellow text cursor position.
 
             if ( _editorPanel.showAreaSelectRect() && ( _tileUnderCursor > -1 ) ) {
@@ -923,6 +934,11 @@ namespace Interface
                     StringReplace( message, "%{width}", std::to_string( mapWidth ) );
                     StringReplace( message, "%{height}", std::to_string( mapHeight ) );
                     _warningMessage.reset( message );
+
+                    // Move view window to coordinates (0,0)
+                    const fheroes2::Rect & roi = _gameArea.GetROI();
+                    _gameArea.SetCenterInPixels( fheroes2::Point( roi.width / 2, roi.height / 2 ) );
+                    setRedraw( REDRAW_GAMEAREA | REDRAW_RADAR_CURSOR );
                 }
             }
 
