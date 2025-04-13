@@ -105,6 +105,7 @@
 #include "view_world.h"
 #include "world.h"
 #include "world_object_uid.h"
+#include "../game/screenshot_manager.h"
 
 namespace
 {
@@ -1165,12 +1166,12 @@ namespace Interface
                 _currentScrollX += roi.width;
 
                 // Check if we've reached the end of the map horizontally
-                if ( _currentScrollX >= mapWidth * fheroes2::tileWidthPx ) {
+                if ( static_cast<size_t>( _currentScrollX ) >= mapWidth * fheroes2::tileWidthPx ) {
                     _currentScrollX = 0;
                     _currentScrollY += roi.height;
 
                     // Check if we've reached the end of the map vertically
-                    if ( _currentScrollY >= mapHeight * fheroes2::tileWidthPx ) {
+                    if ( static_cast<size_t>( _currentScrollY ) >= mapHeight * fheroes2::tileWidthPx ) {
                         // We've reached the end of the map, stop scrolling
                         _isMapScrolling = false;
                         _currentScrollX = 0;
@@ -1181,6 +1182,10 @@ namespace Interface
                 // Set the new center position
                 _gameArea.SetCenterInPixels( fheroes2::Point( _currentScrollX + roi.width / 2, _currentScrollY + roi.height / 2 ) );
                 setRedraw( REDRAW_GAMEAREA | REDRAW_RADAR_CURSOR );
+
+                // Take a screenshot at each scroll position
+                ScreenshotManager screenshotManager;
+                screenshotManager.takeScreenshot( fheroes2::Display::instance() );
             }
 
             // Map objects animation
