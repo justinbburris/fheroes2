@@ -915,6 +915,15 @@ namespace Interface
 
                     setRedraw( REDRAW_GAMEAREA );
                 }
+                else if ( HotKeyPressEvent( Game::HotKeyEvent::EDITOR_SHOW_MAP_SIZE ) )
+                {
+                    const size_t mapWidth = world.w();
+                    const size_t mapHeight = world.h();
+                    std::string message = _( "Map size is %{width} x %{height}." );
+                    StringReplace( message, "%{width}", std::to_string( mapWidth ) );
+                    StringReplace( message, "%{height}", std::to_string( mapHeight ) );
+                    _warningMessage.reset( message );
+                }
             }
 
             if ( res != fheroes2::GameMode::CANCEL ) {

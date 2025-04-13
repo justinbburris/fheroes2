@@ -172,6 +172,8 @@ namespace
             = { Game::HotKeyCategory::EDITOR, gettext_noop( "hotkey|open game main menu" ), fheroes2::Key::KEY_M };
         hotKeyEventInfo[hotKeyEventToInt( Game::HotKeyEvent::EDITOR_TOGGLE_PASSABILITY )]
             = { Game::HotKeyCategory::EDITOR, gettext_noop( "hotkey|toggle passability" ), fheroes2::Key::KEY_P };
+        hotKeyEventInfo[hotKeyEventToInt( Game::HotKeyEvent::EDITOR_SHOW_MAP_SIZE )]
+            = { Game::HotKeyCategory::EDITOR, gettext_noop( "hotkey|show map size" ), fheroes2::Key::KEY_F9 };
 
         hotKeyEventInfo[hotKeyEventToInt( Game::HotKeyEvent::CAMPAIGN_ROLAND )]
             = { Game::HotKeyCategory::CAMPAIGN, gettext_noop( "hotkey|roland campaign" ), fheroes2::Key::KEY_1 };
