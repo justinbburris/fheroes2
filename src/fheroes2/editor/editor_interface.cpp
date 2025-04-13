@@ -18,6 +18,23 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+/*
+ * Editor Interface Implementation Notes
+ *
+ * Map Size Display:
+ * - Fixed incorrect map dimension retrieval by using world.w() and world.h() methods
+ * - Previously incorrect methods were causing display issues
+ *
+ * View Window Coordinates:
+ * - Implemented accurate coordinate display by calculating:
+ *   * Top-left = center - (ROI width/2, ROI height/2)
+ *   * Bottom-right = top-left + (ROI width, ROI height)
+ *
+ * View Window Centering:
+ * - Fixed (0,0) centering by using SetCenterInPixels with ROI-based calculation
+ * - Ensures proper alignment with top-left corner of map
+ */
+
 #include "editor_interface.h"
 
 #include <algorithm>
