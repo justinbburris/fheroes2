@@ -175,5 +175,9 @@ namespace Interface
         WarningMessage _warningMessage;
 
         std::string _loadedFileName;
+
+        bool _isMapScrolling;
+        int _currentScrollX;
+        int _currentScrollY;
     };
 }

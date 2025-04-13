@@ -952,6 +952,11 @@ namespace Interface
                     StringReplace( message, "%{height}", std::to_string( mapHeight ) );
                     _warningMessage.reset( message );
 
+                    // Start the map scrolling process
+                    _isMapScrolling = true;
+                    _currentScrollX = 0;
+                    _currentScrollY = 0;
+
                     // Move view window to coordinates (0,0)
                     const fheroes2::Rect & roi = _gameArea.GetROI();
                     _gameArea.SetCenterInPixels( fheroes2::Point( roi.width / 2, roi.height / 2 ) );
@@ -1149,6 +1154,34 @@ namespace Interface
             }
 
             assert( res == fheroes2::GameMode::CANCEL );
+
+            // Handle map scrolling
+            if ( _isMapScrolling && Game::validateCustomAnimationDelay( 200 ) ) {
+                const fheroes2::Rect & roi = _gameArea.GetROI();
+                const size_t mapWidth = world.w();
+                const size_t mapHeight = world.h();
+
+                // Calculate the next scroll position
+                _currentScrollX += roi.width;
+
+                // Check if we've reached the end of the map horizontally
+                if ( _currentScrollX >= mapWidth * fheroes2::tileWidthPx ) {
+                    _currentScrollX = 0;
+                    _currentScrollY += roi.height;
+
+                    // Check if we've reached the end of the map vertically
+                    if ( _currentScrollY >= mapHeight * fheroes2::tileWidthPx ) {
+                        // We've reached the end of the map, stop scrolling
+                        _isMapScrolling = false;
+                        _currentScrollX = 0;
+                        _currentScrollY = 0;
+                    }
+                }
+
+                // Set the new center position
+                _gameArea.SetCenterInPixels( fheroes2::Point( _currentScrollX + roi.width / 2, _currentScrollY + roi.height / 2 ) );
+                setRedraw( REDRAW_GAMEAREA | REDRAW_RADAR_CURSOR );
+            }
 
             // Map objects animation
             if ( Game::validateAnimationDelay( Game::MAPS_DELAY ) ) {
