@@ -20,7 +20,7 @@ jobs:
         shell: bash
     steps:
     - name: Check if should run
-      if: ${{ inputs.run_check }}
+      if: ${{ !inputs.run_check }}
       run: |
         echo "Skipping CodeChecker as it is not needed for this PR"
         exit 0
