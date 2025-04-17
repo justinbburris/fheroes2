@@ -15,32 +15,25 @@ jobs:
     name: IWYU
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    if: ${{ !inputs.run_check }}
     defaults:
       run:
         shell: bash
     steps:
-    - name: Check if should run
-      if: ${{ !inputs.run_check }}
-      run: |
-        echo "Skipping IWYU as it is not needed for this PR"
     - uses: actions/checkout@v4
-      if: ${{ inputs.run_check }}
     - name: Install dependencies and iwyu
-      if: ${{ inputs.run_check }}
       run: |
         sudo apt-get -y update
         sudo apt-get -y install libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev iwyu
     - name: Prepare compile_commands.json
-      if: ${{ inputs.run_check }}
       run: |
         cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DENABLE_IMAGE=ON -DENABLE_TOOLS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     - name: Analyze
-      if: ${{ inputs.run_check }}
       run: |
         iwyu_tool -p build -j "$(nproc)" -- -Xiwyu --cxx17ns -Xiwyu --error -Xiwyu --mapping_file="$GITHUB_WORKSPACE/iwyu.map" \
             | (grep -E -v "^$|has correct #includes/fwd-decls" || true) | tee iwyu-result.txt
     - uses: actions/upload-artifact@v4
-      if: ${{ inputs.run_check && failure() }}
+      if: ${{ failure() }}
       with:
         name: iwyu-result
         path: iwyu-result.txt
