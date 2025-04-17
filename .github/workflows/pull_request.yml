@@ -47,16 +47,20 @@ jobs:
     uses: ./.github/workflows/code_style_check.yml
   codechecker:
     name: CodeChecker
-    if: ${{ needs.dispatcher.outputs.runCxxAnalyzers == 'YES' }}
     needs:
     - style
+    - dispatcher
     uses: ./.github/workflows/codechecker.yml
+    with:
+      run_check: ${{ needs.dispatcher.outputs.runCxxAnalyzers == 'YES' }}
   iwyu:
     name: IWYU
-    if: ${{ needs.dispatcher.outputs.runCxxAnalyzers == 'YES' }}
     needs:
     - style
+    - dispatcher
     uses: ./.github/workflows/iwyu.yml
+    with:
+      run_check: ${{ needs.dispatcher.outputs.runCxxAnalyzers == 'YES' }}
   msvc:
     name: MSVC
     needs:

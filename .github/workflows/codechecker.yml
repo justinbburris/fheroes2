@@ -2,6 +2,11 @@ name: CodeChecker
 
 on:
   workflow_call:
+    inputs:
+      run_check:
+        type: boolean
+        default: false
+        description: 'Whether the workflow should run or not'
 
 permissions: {}
 
@@ -14,6 +19,11 @@ jobs:
       run:
         shell: bash
     steps:
+    - name: Check if should run
+      if: ${{ inputs.run_check }}
+      run: |
+        echo "Skipping CodeChecker as it is not needed for this PR"
+        exit 0
     - uses: actions/checkout@v4
     - name: Install dependencies and codechecker
       run: |
