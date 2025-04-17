@@ -1366,8 +1366,7 @@ namespace fheroes2
         return display;
     }
 
-    void Display::render( const Rect & roi )
-    {
+    void Display::render( const Rect & roi ) {
         Rect temp( roi );
         if ( !getActiveArea( temp, width(), height() ) )
             return;
