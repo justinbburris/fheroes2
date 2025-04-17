@@ -15,7 +15,7 @@ jobs:
     name: CodeChecker
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-    if: ${{ !inputs.run_check }}
+    if: ${{ inputs.run_check }}
     defaults:
       run:
         shell: bash

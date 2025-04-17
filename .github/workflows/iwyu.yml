@@ -15,7 +15,7 @@ jobs:
     name: IWYU
     runs-on: ubuntu-24.04
     timeout-minutes: 30
-    if: ${{ !inputs.run_check }}
+    if: ${{ inputs.run_check }}
     defaults:
       run:
         shell: bash
