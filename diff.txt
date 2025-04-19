@@ -1,0 +1,190 @@
+diff --git a/src/fheroes2/dialog/dialog_hotkeys.cpp b/src/fheroes2/dialog/dialog_hotkeys.cpp
+index f255bc76..37b3c1d6 100644
+--- a/src/fheroes2/dialog/dialog_hotkeys.cpp
++++ b/src/fheroes2/dialog/dialog_hotkeys.cpp
+@@ -31,6 +31,7 @@
+ #include "agg_image.h"
+ #include "cursor.h"
+ #include "dialog.h"
++#include "game_delays.h"
+ #include "game_hotkeys.h"
+ #include "icn.h"
+ #include "image.h"
+@@ -52,6 +53,8 @@ namespace
+ {
+     const int32_t keyDescriptionLength = 300;
+     const int32_t hotKeyLength = 120;
++    const int32_t searchBoxHeight = 21;
++    const int32_t searchBoxWidth = 268;
+ 
+     class HotKeyElement : public fheroes2::DialogElement
+     {
+@@ -149,7 +152,9 @@ namespace
+ 
+         void RedrawBackground( const fheroes2::Point & /* unused */ ) override
+         {
+-            _listBackground->restore();
++            if ( _listBackground ) {
++                _listBackground->restore();
++            }
+         }
+ 
+         void ActionCurrentUp() override
+@@ -207,22 +212,16 @@ namespace
+             title.add( fheroes2::Text{ _( "Event: " ), fheroes2::FontType::normalYellow() } );
+             title.add( fheroes2::Text{ _( Game::getHotKeyEventNameByEventId( hotKeyEvent.first ) ), fheroes2::FontType::normalWhite() } );
+ 
+-            const int returnValue = fheroes2::showMessage( fheroes2::Text{}, title, Dialog::OK | Dialog::CANCEL, { &hotKeyUI } );
++            const int result = fheroes2::showMessage( fheroes2::Text{}, title, Dialog::OK | Dialog::CANCEL, { &hotKeyUI } );
+ 
+             Game::setHotKeyForEvent( Game::HotKeyEvent::DEFAULT_OKAY, okayEventKey );
+             Game::setHotKeyForEvent( Game::HotKeyEvent::DEFAULT_CANCEL, cancelEventKey );
+             Game::setHotKeyForEvent( Game::HotKeyEvent::GLOBAL_TOGGLE_FULLSCREEN, fullscreenEventKey );
+             Game::setHotKeyForEvent( Game::HotKeyEvent::GLOBAL_TOGGLE_TEXT_SUPPORT_MODE, textSupportModeEventKey );
+ 
+-            // To avoid UI issues we need to reset restorer manually.
+-            hotKeyUI.reset();
+-
+-            if ( returnValue == Dialog::CANCEL ) {
+-                return;
++            if ( result == Dialog::OK ) {
++                Game::setHotKeyForEvent( hotKeyEvent.first, hotKeyUI.getKey() );
+             }
+-
+-            Game::setHotKeyForEvent( hotKeyEvent.first, hotKeyUI.getKey() );
+-            Game::HotKeySave();
+         }
+ 
+         void initListBackgroundRestorer( fheroes2::Rect roi )
+@@ -232,11 +231,37 @@ namespace
+ 
+         void updateScrollBarImage()
+         {
+-            const int32_t scrollBarWidth = _scrollbar.width();
++            const int32_t scrollBarWidth = GetScrollbar().width();
++            setScrollBarImage( fheroes2::generateScrollbarSlider( GetScrollbar(), false, GetScrollbar().getArea().height, VisibleItemCount(), _size(),
++                                                                { 0, 0, scrollBarWidth, 8 }, { 0, 7, scrollBarWidth, 8 } ) );
++        }
++
++        void filterByText( const std::string & text, const std::vector<std::pair<Game::HotKeyEvent, Game::HotKeyCategory>> & allEvents )
++        {
++            std::vector<std::pair<Game::HotKeyEvent, Game::HotKeyCategory>> filteredEvents;
++
++            if ( text.empty() ) {
++                filteredEvents = allEvents;
++            }
++            else {
++                const std::string lowerText = StringLower( text );
++                for ( const auto & event : allEvents ) {
++                    const std::string eventName = StringLower( _( Game::getHotKeyEventNameByEventId( event.first ) ) );
++                    const std::string hotkeyName = StringLower( Game::getHotKeyNameByEventId( event.first ) );
++                    if ( eventName.find( lowerText ) != std::string::npos || hotkeyName.find( lowerText ) != std::string::npos ) {
++                        filteredEvents.push_back( event );
++                    }
++                }
++            }
++
++            SetListContent( filteredEvents );
++            updateScrollBarImage();
++            Redraw();
++        }
+ 
+-            setScrollBarImage( fheroes2::generateScrollbarSlider( _scrollbar, false, _scrollbar.getArea().height, VisibleItemCount(), _size(),
+-                                                                  { 0, 0, scrollBarWidth, 8 }, { 0, 7, scrollBarWidth, 8 } ) );
+-            _scrollbar.moveToIndex( _topId );
++        void Redraw() override
++        {
++            Interface::ListBox<std::pair<Game::HotKeyEvent, Game::HotKeyCategory>>::Redraw();
+         }
+ 
+     private:
+@@ -257,11 +282,16 @@ namespace fheroes2
+         fheroes2::StandardWindow background( keyDescriptionLength + hotKeyLength + 8 + 75, std::min( display.height() - 100, 520 ), true, display );
+ 
+         const fheroes2::Rect roi( background.activeArea() );
+-        const fheroes2::Rect listRoi( roi.x + 24, roi.y + 37, keyDescriptionLength + hotKeyLength + 8, roi.height - 75 );
++        const fheroes2::Rect listRoi( roi.x + 24, roi.y + 37 + searchBoxHeight + 10, keyDescriptionLength + hotKeyLength + 8, roi.height - 75 - searchBoxHeight - 10 );
+ 
+         const fheroes2::Text title( _( "Hot Keys:" ), fheroes2::FontType::normalYellow() );
+         title.draw( roi.x + ( roi.width - title.width() ) / 2, roi.y + 16, display );
+ 
++        // Add search box
++        const fheroes2::Point searchBoxPos( roi.x + ( roi.width - searchBoxWidth ) / 2, roi.y + 37 );
++        const fheroes2::Sprite & searchBoxSprite = fheroes2::AGG::GetICN( ICN::BUYBUILD, 3 );
++        fheroes2::Blit( searchBoxSprite, display, searchBoxPos.x, searchBoxPos.y );
++
+         // We divide the list: action description and binded hot-key.
+         background.applyTextBackgroundShading( { listRoi.x, listRoi.y, keyDescriptionLength + 8, listRoi.height } );
+         background.applyTextBackgroundShading( { listRoi.x + keyDescriptionLength + 8, listRoi.y, hotKeyLength, listRoi.height } );
+@@ -296,6 +326,19 @@ namespace fheroes2
+         listbox.updateScrollBarImage();
+         listbox.Redraw();
+ 
++        // Search text input
++        std::string searchText;
++        size_t cursorPosition = 0;
++        bool isCursorVisible = true;
++        fheroes2::ImageRestorer searchBoxRestorer( display, searchBoxPos.x + 13, searchBoxPos.y + 1, searchBoxWidth - 26, searchBoxHeight - 3 );
++
++        auto redrawSearchBox = [&display, &searchText, &cursorPosition, &isCursorVisible, &searchBoxRestorer]() {
++            searchBoxRestorer.restore();
++            fheroes2::Text text( insertCharToString( searchText, cursorPosition, isCursorVisible ? '_' : '\x7F' ), fheroes2::FontType::normalWhite() );
++            text.draw( searchBoxRestorer.x(), searchBoxRestorer.y() + 2, display );
++            display.render( searchBoxRestorer.rect() );
++        };
++
+         display.render( background.totalArea() );
+ 
+         LocalEvent & le = LocalEvent::Get();
+@@ -310,10 +353,50 @@ namespace fheroes2
+ 
+             if ( le.isMouseRightButtonPressedInArea( buttonOk.area() ) ) {
+                 fheroes2::showStandardTextMessage( _( "Okay" ), _( "Exit this menu." ), Dialog::ZERO );
+-
+                 continue;
+             }
+ 
++            // Handle search box input
++            if ( le.isAnyKeyPressed() ) {
++                const fheroes2::Key key = le.getPressedKeyValue();
++                bool updateList = false;
++
++                if ( key == fheroes2::Key::KEY_BACKSPACE || key == fheroes2::Key::KEY_DELETE ) {
++                    if ( !searchText.empty() && cursorPosition > 0 ) {
++                        searchText.erase( cursorPosition - 1, 1 );
++                        --cursorPosition;
++                        updateList = true;
++                    }
++                }
++                else if ( key == fheroes2::Key::KEY_LEFT && cursorPosition > 0 ) {
++                    --cursorPosition;
++                }
++                else if ( key == fheroes2::Key::KEY_RIGHT && cursorPosition < searchText.size() ) {
++                    ++cursorPosition;
++                }
++                else if ( searchText.size() < 20 ) {
++                    const size_t oldPos = cursorPosition;
++                    cursorPosition = InsertKeySym( searchText, cursorPosition, key, LocalEvent::getCurrentKeyModifiers() );
++                    if ( cursorPosition != oldPos ) {
++                        updateList = true;
++                    }
++                }
++
++                if ( updateList ) {
++                    background.applyTextBackgroundShading( { listRoi.x, listRoi.y, keyDescriptionLength + 8, listRoi.height } );
++                    background.applyTextBackgroundShading( { listRoi.x + keyDescriptionLength + 8, listRoi.y, hotKeyLength, listRoi.height } );
++                    listbox.filterByText( searchText, hotKeyEvents );
++                    display.render( listRoi );
++                }
++                redrawSearchBox();
++            }
++
++            // Handle cursor blinking
++            if ( Game::validateAnimationDelay( Game::DelayType::CURSOR_BLINK_DELAY ) ) {
++                isCursorVisible = !isCursorVisible;
++                redrawSearchBox();
++            }
++
+             if ( !listbox.IsNeedRedraw() ) {
+                 continue;
+             }
