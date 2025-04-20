@@ -2,7 +2,7 @@ name: Deploy to Cloudflare Pages
 
 on:
   workflow_run:
-    workflows: ["Make"]
+    workflows: ["Pull Request"]
     types:
       - completed
 
