@@ -18,11 +18,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: fheroes2_emscripten.zip
-          path: ./dist
+      - name: Download Emscripten release
+        run: |
+          gh release download fheroes2-emscripten-sdl2_dev -D ./dist
 
       - name: Extract ZIP file
         run: |
