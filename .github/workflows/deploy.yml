@@ -1,17 +1,18 @@
 name: Deploy to Cloudflare Pages
 
 on:
+  push:
+    branches:
+      - 'jb/cloudflare-hosting'
   workflow_run:
     workflows: ["Pull Request"]
     types:
       - completed
-    branches:
-      - 'jb/cloudflare-hosting'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'push' }}
 
     steps:
       - name: Checkout repository
