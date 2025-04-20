@@ -1,16 +1,17 @@
 name: Deploy to Cloudflare Pages
 
 on:
-  workflow_call:
-    inputs:
-      artifact_name:
-        required: true
-        type: string
-        description: "Name of the artifact to deploy"
+  workflow_run:
+    workflows: ["Pull Request"]
+    types:
+      - completed
+    branches:
+      - 'jb/cloudflare-hosting'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout repository
@@ -19,15 +20,15 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
-          name: ${{ inputs.artifact_name }}
+          name: fheroes2_emscripten.zip
           path: ./dist
 
       - name: Extract ZIP file
         run: |
           cd dist
-          unzip ${{ inputs.artifact_name }} -d extracted
+          unzip fheroes2_emscripten.zip -d extracted
           mv extracted/* .
-          rm -rf extracted ${{ inputs.artifact_name }}
+          rm -rf extracted fheroes2_emscripten.zip
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

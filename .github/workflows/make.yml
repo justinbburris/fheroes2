@@ -383,9 +383,3 @@ jobs:
         artifactErrorsFailBuild: true
         prerelease: true
         replacesArtifacts: true
-
-    - name: Deploy to Cloudflare Pages
-      if: ${{ contains( matrix.on, github.event_name ) && matrix.name == 'Emscripten' }}
-      uses: ./.github/workflows/deploy.yml
-      with:
-        artifact_name: ${{ matrix.package_name }}
