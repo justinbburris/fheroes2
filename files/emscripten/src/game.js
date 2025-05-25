@@ -94,14 +94,8 @@ function handleFileUpload(e) {
             .some(folder => WHITELISTED_DIRS.includes(folder));
     });
 
-    uploadFiles(validFiles);
-}
-
-// File upload process
-function uploadFiles(files) {
-    const uploaded = [];
-
-    files.forEach(file => {
+    // Process files in a single reduce operation to avoid race conditions
+    validFiles.reduce((uploaded, file) => {
         const [fileName, ...path] = file.webkitRelativePath.split('/').reverse();
         const [ignore, ...relativePath] = path.reverse();
 
@@ -117,9 +111,9 @@ function uploadFiles(files) {
             );
 
             uploaded.push(file);
-            updateProgress(uploaded.length, files.length);
+            updateProgress(uploaded.length, validFiles.length);
 
-            if (uploaded.length === files.length) {
+            if (uploaded.length === validFiles.length) {
                 FS.syncfs(false, err => {
                     if (err) return showError('Failed to sync file system');
                     showLauncher();
@@ -128,7 +122,8 @@ function uploadFiles(files) {
         });
 
         reader.readAsArrayBuffer(file);
-    });
+        return uploaded;
+    }, []);
 }
 
 // Progress update
@@ -199,9 +194,24 @@ function clearPath(path) {
 }
 
 function startGame() {
-    removeRunDependency('syncfs');
-    document.querySelector('#uploader').style.display = 'none';
-    document.querySelector('#launcher').style.display = 'none';
+    showProgress();
+    const startTime = Date.now();
+    const minLoadingTime = 500; // minimum loading time in milliseconds
+
+    // Ensure minimum loading time has passed
+    const elapsedTime = Date.now() - startTime;
+    const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
+
+    setTimeout(() => {
+        removeRunDependency('syncfs');
+        document.querySelector('#uploader').style.display = 'none';
+        document.querySelector('#launcher').style.display = 'none';
+        document.querySelector('#progress').style.opacity = '0';
+        setTimeout(() => {
+            document.querySelector('#progress').style.display = 'none';
+            document.querySelector('#progress').style.opacity = '1';
+        }, 300); // Match the transition duration
+    }, remainingTime);
 }
 
 function deleteFiles() {
@@ -231,6 +241,7 @@ function setStatus(status) {
     updateProgress(progress, total);
 
     if (done === 100) {
-        hideProgress();
+        // Add a small delay before hiding progress to ensure smooth transition
+        setTimeout(hideProgress, 300);
     }
 }
